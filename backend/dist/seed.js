@@ -1,13 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = __importDefault(require("./utils/db"));
+const client_1 = require("@prisma/client");
+// Use regular connection for seeding
+const prisma = new client_1.PrismaClient();
 async function main() {
     console.log('🌱 Starting database seed...');
     // Create demo users
-    const demoUser = await db_1.default.user.upsert({
+    const demoUser = await prisma.user.upsert({
         where: { email: 'demo@example.com' },
         update: {},
         create: {
@@ -16,7 +15,7 @@ async function main() {
             role: 'USER'
         }
     });
-    const adminUser = await db_1.default.user.upsert({
+    const adminUser = await prisma.user.upsert({
         where: { email: 'admin@example.com' },
         update: {},
         create: {
@@ -112,11 +111,11 @@ async function main() {
         }
     ];
     for (const buyerData of sampleBuyers) {
-        const buyer = await db_1.default.buyer.create({
+        const buyer = await prisma.buyer.create({
             data: buyerData
         });
         // Create initial history entry
-        await db_1.default.buyerHistory.create({
+        await prisma.buyerHistory.create({
             data: {
                 buyerId: buyer.id,
                 changedBy: buyerData.ownerId,
@@ -136,6 +135,6 @@ main()
     process.exit(1);
 })
     .finally(async () => {
-    await db_1.default.$disconnect();
+    await prisma.$disconnect();
 });
 //# sourceMappingURL=seed.js.map
