@@ -44,8 +44,43 @@ export const BuyerCreateSchema = z.object({
   path: ['budgetMax']
 });
 
-export const BuyerUpdateSchema = BuyerCreateSchema.partial().extend({
+// Create a partial schema without the refinements first
+const BuyerCreateSchemaBase = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(80, 'Full name must be less than 80 characters'),
+  email: z.string().email('Invalid email format').optional(),
+  phone: z.string().regex(/^\d{10,15}$/, 'Phone must be 10-15 digits'),
+  city: CitySchema,
+  propertyType: PropertyTypeSchema,
+  bhk: BHKSchema.optional(),
+  purpose: PurposeSchema,
+  budgetMin: z.number().int().positive().optional(),
+  budgetMax: z.number().int().positive().optional(),
+  timeline: TimelineSchema,
+  source: SourceSchema,
+  notes: z.string().max(1000, 'Notes must be less than 1000 characters').optional(),
+  tags: z.array(z.string()).optional().default([])
+});
+
+export const BuyerUpdateSchema = BuyerCreateSchemaBase.partial().extend({
   status: StatusSchema.optional()
+}).refine((data) => {
+  // BHK is required for Apartment and Villa
+  if (data.propertyType && ['APARTMENT', 'VILLA'].includes(data.propertyType) && !data.bhk) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'BHK is required for Apartment and Villa property types',
+  path: ['bhk']
+}).refine((data) => {
+  // Budget validation: budgetMax >= budgetMin when both present
+  if (data.budgetMin && data.budgetMax && data.budgetMax < data.budgetMin) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Budget maximum must be greater than or equal to budget minimum',
+  path: ['budgetMax']
 });
 
 export const BuyerFiltersSchema = z.object({

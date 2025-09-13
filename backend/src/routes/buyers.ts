@@ -1,8 +1,9 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { demoAuthenticate, AuthenticatedRequest } from '../utils/auth';
+import { Prisma } from '@prisma/client';
 import { apiLimiter, createUpdateLimiter, importLimiter } from '../middleware/rateLimiter';
 import { asyncHandler, createError } from '../middleware/errorHandler';
 import { BuyerCreateSchema, BuyerUpdateSchema, BuyerFiltersSchema } from '../validators';
@@ -31,7 +32,7 @@ const upload = multer({
 router.use(demoAuthenticate);
 
 // GET /buyers - List buyers with pagination and filters
-router.get('/', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const filters = BuyerFiltersSchema.parse(req.query);
   
   const where: any = {};
@@ -89,7 +90,7 @@ router.get('/', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res) 
 }));
 
 // GET /buyers/:id - Get specific buyer
-router.get('/:id', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const buyer = await prisma.buyer.findUnique({
     where: { id: req.params.id },
     include: {
@@ -121,10 +122,10 @@ router.get('/:id', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, re
 }));
 
 // POST /buyers - Create new buyer
-router.post('/', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const validatedData = BuyerCreateSchema.parse(req.body);
   
-  const buyer = await prisma.$transaction(async (tx) => {
+  const buyer = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Create buyer
     const newBuyer = await tx.buyer.create({
       data: {
@@ -163,11 +164,11 @@ router.post('/', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequ
 }));
 
 // PUT /buyers/:id - Update buyer
-router.put('/:id', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const validatedData = BuyerUpdateSchema.parse(req.body);
   const { updatedAt: clientUpdatedAt } = req.body;
   
-  const buyer = await prisma.$transaction(async (tx) => {
+  const buyer = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Check if buyer exists and user has permission
     const existingBuyer = await tx.buyer.findUnique({
       where: { id: req.params.id }
@@ -235,7 +236,7 @@ router.put('/:id', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRe
 }));
 
 // DELETE /buyers/:id - Delete buyer
-router.delete('/:id', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', createUpdateLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const buyer = await prisma.buyer.findUnique({
     where: { id: req.params.id }
   });
@@ -262,7 +263,7 @@ router.delete('/:id', createUpdateLimiter, asyncHandler(async (req: Authenticate
 }));
 
 // POST /buyers/import - Import buyers from CSV
-router.post('/import', importLimiter, upload.single('file'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/import', importLimiter, upload.single('file'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   if (!req.file) {
     throw createError('CSV file is required', 400);
   }
@@ -281,7 +282,7 @@ router.post('/import', importLimiter, upload.single('file'), asyncHandler(async 
       errors: []
     };
     
-    const validBuyers = [];
+    const validBuyers: any[] = [];
     
     // Validate all rows first
     for (let i = 0; i < csvData.length; i++) {
@@ -308,7 +309,7 @@ router.post('/import', importLimiter, upload.single('file'), asyncHandler(async 
     
     // Insert valid buyers in a transaction
     if (validBuyers.length > 0) {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         for (const buyerData of validBuyers) {
           const buyer = await tx.buyer.create({
             data: buyerData
@@ -350,7 +351,7 @@ router.post('/import', importLimiter, upload.single('file'), asyncHandler(async 
 }));
 
 // GET /buyers/export - Export buyers to CSV
-router.get('/export', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/export', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const filters = BuyerFiltersSchema.parse(req.query);
   
   const where: any = {};
@@ -382,7 +383,7 @@ router.get('/export', apiLimiter, asyncHandler(async (req: AuthenticatedRequest,
   
   await generateCSV(buyers, filepath);
   
-  res.download(filepath, filename, async (err) => {
+  res.download(filepath, filename, async (err: any) => {
     if (!err) {
       // Clean up file after download
       try {

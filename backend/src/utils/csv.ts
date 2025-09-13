@@ -1,5 +1,5 @@
 import csv from 'csv-parser';
-import createCsvWriter from 'csv-writer';
+import * as createCsvWriter from 'csv-writer';
 import { Readable } from 'stream';
 import { 
   CSVImportRow, 
@@ -91,8 +91,7 @@ export const parseCSV = (csvBuffer: Buffer): Promise<CSVImportRow[]> => {
           'fullName', 'email', 'phone', 'city', 'propertyType', 
           'bhk', 'purpose', 'budgetMin', 'budgetMax', 'timeline', 
           'source', 'notes', 'tags', 'status'
-        ],
-        skipEmptyLines: true
+        ]
       }))
       .on('data', (data: CSVImportRow) => {
         results.push(data);

@@ -1,4 +1,7 @@
-import prisma from './utils/db';
+import { PrismaClient } from '@prisma/client';
+
+// Use regular connection for seeding
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...');

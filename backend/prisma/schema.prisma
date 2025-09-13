@@ -21,7 +21,7 @@ model User {
 
   // Relations
   ownedBuyers    Buyer[]        @relation("BuyerOwner")
-  buyerHistories BuyerHistory[]
+  buyerHistories BuyerHistory[] @relation("BuyerHistoryUser")
 
   @@map("users")
 }
@@ -61,8 +61,8 @@ model BuyerHistory {
   diff      Json
 
   // Relations
-  buyer User @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-  user  User @relation(fields: [changedBy], references: [id])
+  buyer Buyer @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  user  User  @relation("BuyerHistoryUser", fields: [changedBy], references: [id])
 
   @@map("buyer_history")
 }
