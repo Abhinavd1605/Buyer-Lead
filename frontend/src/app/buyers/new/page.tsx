@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth";
@@ -186,8 +186,13 @@ export default function NewBuyerPage() {
     createMutation.mutate(submitData as Omit<Buyer, "id" | "ownerId" | "createdAt" | "updatedAt" | "status">);
   };
 
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    }
+  }, [user, router]);
+
   if (!user) {
-    router.push('/login');
     return null;
   }
 

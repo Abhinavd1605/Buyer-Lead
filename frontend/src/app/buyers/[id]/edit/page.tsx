@@ -237,8 +237,13 @@ export default function EditBuyerPage() {
     updateMutation.mutate(submitData as Partial<Buyer>);
   };
 
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    }
+  }, [user, router]);
+
   if (!user) {
-    router.push('/login');
     return null;
   }
 
