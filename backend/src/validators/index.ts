@@ -89,8 +89,8 @@ export const BuyerFiltersSchema = z.object({
   status: StatusSchema.optional(),
   timeline: TimelineSchema.optional(),
   search: z.string().optional(),
-  page: z.number().int().positive().default(1),
-  limit: z.number().int().positive().max(50).default(10),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(50).default(10),
   sortBy: z.string().default('updatedAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc')
 });

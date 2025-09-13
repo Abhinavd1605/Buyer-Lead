@@ -87,8 +87,8 @@ exports.BuyerFiltersSchema = zod_1.z.object({
     status: exports.StatusSchema.optional(),
     timeline: exports.TimelineSchema.optional(),
     search: zod_1.z.string().optional(),
-    page: zod_1.z.number().int().positive().default(1),
-    limit: zod_1.z.number().int().positive().max(50).default(10),
+    page: zod_1.z.coerce.number().int().positive().default(1),
+    limit: zod_1.z.coerce.number().int().positive().max(50).default(10),
     sortBy: zod_1.z.string().default('updatedAt'),
     sortOrder: zod_1.z.enum(['asc', 'desc']).default('desc')
 });
