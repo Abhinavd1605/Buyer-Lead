@@ -24,10 +24,10 @@ export const createUpdateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Very strict rate limiter for CSV imports
+// Rate limiter for CSV imports (more lenient for development)
 export const importLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // limit each IP to 5 imports per hour
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 imports per 15 minutes
   message: {
     success: false,
     error: 'Too many import requests from this IP, please try again later.'

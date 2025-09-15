@@ -263,7 +263,7 @@ router.delete('/:id', createUpdateLimiter, asyncHandler(async (req: Authenticate
 }));
 
 // POST /buyers/import - Import buyers from CSV
-router.post('/import', importLimiter, upload.single('file'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/import', demoAuthenticate, process.env.NODE_ENV === 'production' ? importLimiter : (req: any, res: any, next: any) => next(), upload.single('file'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   if (!req.file) {
     throw createError('CSV file is required', 400);
   }
@@ -351,7 +351,7 @@ router.post('/import', importLimiter, upload.single('file'), asyncHandler(async 
 }));
 
 // GET /buyers/export - Export buyers to CSV
-router.get('/export', apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/export', demoAuthenticate, apiLimiter, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const filters = BuyerFiltersSchema.parse(req.query);
   
   const where: any = {};
@@ -373,26 +373,46 @@ router.get('/export', apiLimiter, asyncHandler(async (req: AuthenticatedRequest,
   const buyers = await prisma.buyer.findMany({
     where,
     orderBy: {
-      [filters.sortBy]: filters.sortOrder
+      [filters.sortBy || 'updatedAt']: filters.sortOrder || 'desc'
     }
   });
   
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  // Generate CSV content directly
+  const csvHeader = 'fullName,email,phone,city,propertyType,bhk,purpose,budgetMin,budgetMax,timeline,source,notes,tags,status,updatedAt\n';
+  
+  const csvRows = buyers.map(buyer => {
+    const row = [
+      `"${buyer.fullName || ''}"`,
+      `"${buyer.email || ''}"`,
+      `"${buyer.phone || ''}"`,
+      `"${buyer.city || ''}"`,
+      `"${buyer.propertyType || ''}"`,
+      `"${buyer.bhk || ''}"`,
+      `"${buyer.purpose || ''}"`,
+      `"${buyer.budgetMin || ''}"`,
+      `"${buyer.budgetMax || ''}"`,
+      `"${buyer.timeline || ''}"`,
+      `"${buyer.source || ''}"`,
+      `"${(buyer.notes || '').replace(/"/g, '""')}"`,
+      `"${buyer.tags ? buyer.tags.join(', ') : ''}"`,
+      `"${buyer.status || ''}"`,
+      `"${buyer.updatedAt ? new Date(buyer.updatedAt).toISOString() : ''}"`
+    ];
+    return row.join(',');
+  }).join('\n');
+  
+  const csvContent = csvHeader + csvRows;
+  
+  const timestamp = new Date().toISOString().split('T')[0];
   const filename = `buyers-export-${timestamp}.csv`;
-  const filepath = path.join('uploads', filename);
   
-  await generateCSV(buyers, filepath);
+  // Set headers for CSV download
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Length', Buffer.byteLength(csvContent, 'utf8'));
   
-  res.download(filepath, filename, async (err: any) => {
-    if (!err) {
-      // Clean up file after download
-      try {
-        await fs.unlink(filepath);
-      } catch (error) {
-        console.error('Error deleting export file:', error);
-      }
-    }
-  });
+  // Send CSV content directly
+  res.send(csvContent);
 }));
 
 export default router;

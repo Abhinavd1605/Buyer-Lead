@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
 const promises_1 = __importDefault(require("fs/promises"));
 const auth_1 = require("../utils/auth");
 const rateLimiter_1 = require("../middleware/rateLimiter");
@@ -231,7 +230,7 @@ router.delete('/:id', rateLimiter_1.createUpdateLimiter, (0, errorHandler_1.asyn
     res.json(response);
 }));
 // POST /buyers/import - Import buyers from CSV
-router.post('/import', rateLimiter_1.importLimiter, upload.single('file'), (0, errorHandler_1.asyncHandler)(async (req, res) => {
+router.post('/import', auth_1.demoAuthenticate, process.env.NODE_ENV === 'production' ? rateLimiter_1.importLimiter : (req, res, next) => next(), upload.single('file'), (0, errorHandler_1.asyncHandler)(async (req, res) => {
     if (!req.file) {
         throw (0, errorHandler_1.createError)('CSV file is required', 400);
     }
@@ -309,7 +308,7 @@ router.post('/import', rateLimiter_1.importLimiter, upload.single('file'), (0, e
     }
 }));
 // GET /buyers/export - Export buyers to CSV
-router.get('/export', rateLimiter_1.apiLimiter, (0, errorHandler_1.asyncHandler)(async (req, res) => {
+router.get('/export', auth_1.demoAuthenticate, rateLimiter_1.apiLimiter, (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const filters = validators_1.BuyerFiltersSchema.parse(req.query);
     const where = {};
     // Apply same filters as list endpoint
@@ -331,24 +330,40 @@ router.get('/export', rateLimiter_1.apiLimiter, (0, errorHandler_1.asyncHandler)
     const buyers = await db_1.default.buyer.findMany({
         where,
         orderBy: {
-            [filters.sortBy]: filters.sortOrder
+            [filters.sortBy || 'updatedAt']: filters.sortOrder || 'desc'
         }
     });
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    // Generate CSV content directly
+    const csvHeader = 'fullName,email,phone,city,propertyType,bhk,purpose,budgetMin,budgetMax,timeline,source,notes,tags,status,updatedAt\n';
+    const csvRows = buyers.map(buyer => {
+        const row = [
+            `"${buyer.fullName || ''}"`,
+            `"${buyer.email || ''}"`,
+            `"${buyer.phone || ''}"`,
+            `"${buyer.city || ''}"`,
+            `"${buyer.propertyType || ''}"`,
+            `"${buyer.bhk || ''}"`,
+            `"${buyer.purpose || ''}"`,
+            `"${buyer.budgetMin || ''}"`,
+            `"${buyer.budgetMax || ''}"`,
+            `"${buyer.timeline || ''}"`,
+            `"${buyer.source || ''}"`,
+            `"${(buyer.notes || '').replace(/"/g, '""')}"`,
+            `"${buyer.tags ? buyer.tags.join(', ') : ''}"`,
+            `"${buyer.status || ''}"`,
+            `"${buyer.updatedAt ? new Date(buyer.updatedAt).toISOString() : ''}"`
+        ];
+        return row.join(',');
+    }).join('\n');
+    const csvContent = csvHeader + csvRows;
+    const timestamp = new Date().toISOString().split('T')[0];
     const filename = `buyers-export-${timestamp}.csv`;
-    const filepath = path_1.default.join('uploads', filename);
-    await (0, csv_1.generateCSV)(buyers, filepath);
-    res.download(filepath, filename, async (err) => {
-        if (!err) {
-            // Clean up file after download
-            try {
-                await promises_1.default.unlink(filepath);
-            }
-            catch (error) {
-                console.error('Error deleting export file:', error);
-            }
-        }
-    });
+    // Set headers for CSV download
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', Buffer.byteLength(csvContent, 'utf8'));
+    // Send CSV content directly
+    res.send(csvContent);
 }));
 exports.default = router;
 //# sourceMappingURL=buyers.js.map

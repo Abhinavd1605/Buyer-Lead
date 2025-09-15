@@ -1,0 +1,2 @@
+fullName,email,phone,city,propertyType,bhk,purpose,budgetMin,budgetMax,timeline,source,notes,tags
+Test User,test@example.com,9876543210,chandigarh,apartment,2,buy,5000000,8000000,0-3m,website,"Test import","test"

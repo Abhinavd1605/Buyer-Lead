@@ -100,13 +100,14 @@ export default function NewBuyerPage() {
   const [errors, setErrors] = useState<Partial<FormData>>({});
 
   const createMutation = useMutation({
-    mutationFn: buyersAPI.create,
+    mutationFn: (data: Omit<Buyer, 'id' | 'ownerId' | 'owner' | 'createdAt' | 'updatedAt'>) => 
+      buyersAPI.create(data),
     onSuccess: () => {
-      toast.success('🎉 Buyer lead created successfully!');
+      toast.success('🎉 New buyer lead created successfully!');
       router.push('/buyers');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create buyer lead');
+      toast.error(error.message || 'Failed to create buyer');
     },
   });
 
@@ -164,7 +165,7 @@ export default function NewBuyerPage() {
       return;
     }
 
-    const submitData: Record<string, unknown> = {
+    const submitData: any = {
       fullName: formData.fullName.trim(),
       phone: formData.phone.replace(/\D/g, ''),
       city: formData.city,
@@ -172,6 +173,7 @@ export default function NewBuyerPage() {
       purpose: formData.purpose,
       timeline: formData.timeline,
       source: formData.source,
+      status: 'NEW',
     };
 
     if (formData.email) submitData.email = formData.email.trim();
@@ -183,7 +185,7 @@ export default function NewBuyerPage() {
       submitData.tags = formData.tags.split(',').map(tag => tag.trim()).filter(Boolean);
     }
 
-    createMutation.mutate(submitData as Omit<Buyer, "id" | "ownerId" | "createdAt" | "updatedAt" | "status">);
+    createMutation.mutate(submitData as Omit<Buyer, 'id' | 'ownerId' | 'owner' | 'createdAt' | 'updatedAt'>);
   };
 
   useEffect(() => {
@@ -197,11 +199,11 @@ export default function NewBuyerPage() {
   }
 
   return (
-    <div className="app-layout">
-      {/* Header */}
-      <header className="app-header">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
+    <div className="app-layout bg-gray-50 min-h-screen">
+      {/* Clean Header */}
+      <header className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" onClick={() => router.back()}>
                 <ArrowLeft className="w-5 h-5" />
@@ -220,7 +222,6 @@ export default function NewBuyerPage() {
                 variant="primary" 
                 onClick={handleSubmit}
                 loading={createMutation.isPending}
-                size="lg"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Lead
@@ -231,21 +232,24 @@ export default function NewBuyerPage() {
       </header>
 
       {/* Form */}
-      <main className="app-main">
-        <div className="max-w-4xl mx-auto">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Personal Information */}
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <User className="w-5 h-5 mr-3 text-primary" />
-                  Personal Information
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">Basic contact details and identification</p>
-              </div>
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Left Column */}
+            <div className="space-y-6">
               
-              <div className="card-content">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Contact Information */}
+              <div className="bg-white rounded-lg border p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <User className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+                    <p className="text-sm text-gray-500">Basic contact details and identification</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
                   <div>
                     <label className="input-label">Full Name *</label>
                     <Input
@@ -297,20 +301,78 @@ export default function NewBuyerPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Budget & Timeline */}
+              <div className="bg-white rounded-lg border p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <DollarSign className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Budget & Timeline</h3>
+                    <p className="text-sm text-gray-500">Financial capacity and purchase timeline</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="input-label">Minimum Budget (₹)</label>
+                      <Input
+                        type="number"
+                        value={formData.budgetMin}
+                        onChange={(e) => handleInputChange('budgetMin', e.target.value)}
+                        placeholder="e.g., 5000000"
+                      />
+                      <div className="text-xs text-gray-500 mt-1">Leave blank if no minimum</div>
+                    </div>
+                    
+                    <div>
+                      <label className="input-label">Maximum Budget (₹)</label>
+                      <Input
+                        type="number"
+                        value={formData.budgetMax}
+                        onChange={(e) => handleInputChange('budgetMax', e.target.value)}
+                        placeholder="e.g., 10000000"
+                        error={errors.budgetMax}
+                      />
+                      <div className="text-xs text-gray-500 mt-1">Leave blank if no maximum</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="input-label">Purchase Timeline *</label>
+                    <select
+                      className={`input ${errors.timeline ? 'input-error' : ''}`}
+                      value={formData.timeline}
+                      onChange={(e) => handleInputChange('timeline', e.target.value)}
+                    >
+                      <option value="">Select timeline</option>
+                      {FORM_OPTIONS.timelines.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.timeline && <div className="input-error-text">{errors.timeline}</div>}
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            {/* Property Requirements */}
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Home className="w-5 h-5 mr-3 text-primary" />
-                  Property Requirements
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">Specify property preferences and requirements</p>
-              </div>
+            {/* Right Column */}
+            <div className="space-y-6">
               
-              <div className="card-content">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Property Requirements */}
+              <div className="bg-white rounded-lg border p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Home className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Property Requirements</h3>
+                    <p className="text-sm text-gray-500">Property preferences and requirements</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
                   <div>
                     <label className="input-label">Property Type *</label>
                     <select
@@ -365,75 +427,18 @@ export default function NewBuyerPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Budget & Timeline */}
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <DollarSign className="w-5 h-5 mr-3 text-primary" />
-                  Budget & Timeline
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">Financial capacity and purchase timeline</p>
-              </div>
-              
-              <div className="card-content">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Additional Information */}
+              <div className="bg-white rounded-lg border p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <FileText className="w-5 h-5 text-gray-600" />
                   <div>
-                    <label className="input-label">Minimum Budget (₹)</label>
-                    <Input
-                      type="number"
-                      value={formData.budgetMin}
-                      onChange={(e) => handleInputChange('budgetMin', e.target.value)}
-                      placeholder="e.g., 5000000"
-                    />
-                    <div className="input-help">Leave blank if no minimum</div>
-                  </div>
-                  
-                  <div>
-                    <label className="input-label">Maximum Budget (₹)</label>
-                    <Input
-                      type="number"
-                      value={formData.budgetMax}
-                      onChange={(e) => handleInputChange('budgetMax', e.target.value)}
-                      placeholder="e.g., 10000000"
-                      error={errors.budgetMax}
-                    />
-                    <div className="input-help">Leave blank if no maximum</div>
-                  </div>
-                  
-                  <div>
-                    <label className="input-label">Purchase Timeline *</label>
-                    <select
-                      className={`input ${errors.timeline ? 'input-error' : ''}`}
-                      value={formData.timeline}
-                      onChange={(e) => handleInputChange('timeline', e.target.value)}
-                    >
-                      <option value="">Select timeline</option>
-                      {FORM_OPTIONS.timelines.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.timeline && <div className="input-error-text">{errors.timeline}</div>}
+                    <h3 className="text-lg font-semibold text-gray-900">Additional Information</h3>
+                    <p className="text-sm text-gray-500">Lead source, tags, and notes</p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <FileText className="w-5 h-5 mr-3 text-primary" />
-                  Additional Information
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">Lead source, tags, and additional notes</p>
-              </div>
-              
-              <div className="card-content">
-                <div className="space-y-6">
+                
+                <div className="space-y-4">
                   <div>
                     <label className="input-label">Lead Source *</label>
                     <select
@@ -459,7 +464,7 @@ export default function NewBuyerPage() {
                       placeholder="premium, urgent, referral"
                       icon={<Tag className="w-4 h-4" />}
                     />
-                    <div className="input-help">Separate multiple tags with commas for better organization</div>
+                    <div className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</div>
                   </div>
                   
                   <div>
@@ -469,31 +474,32 @@ export default function NewBuyerPage() {
                       value={formData.notes}
                       onChange={(e) => handleInputChange('notes', e.target.value)}
                       placeholder="Enter any additional notes, preferences, or special requirements..."
-                      rows={4}
+                      rows={5}
                     />
-                    <div className="input-help">Maximum 1000 characters • Include specific preferences, requirements, or important details</div>
+                    <div className="text-xs text-gray-500 mt-1">Include specific preferences or requirements</div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-4 pt-6">
-              <Button variant="secondary" type="button" onClick={() => router.back()}>
-                Cancel
-              </Button>
-              <Button 
-                variant="primary" 
-                type="submit"
-                loading={createMutation.isPending}
-                size="lg"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Create Buyer Lead
-              </Button>
             </div>
-          </form>
-        </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-8 mt-8 border-t">
+            <Button variant="secondary" type="button" onClick={() => router.back()}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Cancel & Go Back
+            </Button>
+            <Button 
+              variant="primary" 
+              type="submit"
+              loading={createMutation.isPending}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Create New Lead
+            </Button>
+          </div>
+        </form>
       </main>
     </div>
   );

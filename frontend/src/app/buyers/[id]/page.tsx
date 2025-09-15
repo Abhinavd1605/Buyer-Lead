@@ -105,11 +105,11 @@ export default function BuyerDetailPage() {
   const canEdit = user.id === buyer.ownerId || user.role === 'ADMIN';
 
   return (
-    <div className="app-layout">
+    <div className="app-layout bg-gray-50 min-h-screen">
       {/* Header */}
-      <header className="app-header">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
+      <header className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" onClick={() => router.back()}>
                 <ArrowLeft className="w-5 h-5" />
@@ -125,13 +125,12 @@ export default function BuyerDetailPage() {
                 <Button 
                   variant="secondary" 
                   onClick={() => router.push(`/buyers/${buyer.id}/edit`)}
-                  size="lg"
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
-                <Button variant="secondary" onClick={handleDelete} size="lg">
-                  <Trash2 className="w-4 h-4 mr-2 text-error" />
+                <Button variant="secondary" onClick={handleDelete}>
+                  <Trash2 className="w-4 h-4 mr-2 text-red-600" />
                   Delete
                 </Button>
               </div>
@@ -141,304 +140,226 @@ export default function BuyerDetailPage() {
       </header>
 
       {/* Main Content */}
-      <main className="app-main">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Status & Last Updated */}
-          <div className="flex items-center justify-between">
-            <span className={`badge badge-${buyer.status.toLowerCase()}`}>
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Status & ID Row */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <span className={`badge badge-${buyer.status.toLowerCase()} px-3 py-1 rounded-full text-sm font-medium`}>
               {getDisplayValue(buyer.status, STATUS_DISPLAY)}
             </span>
-            <div className="text-sm text-gray-500">
-              Last updated: {formatDateTime(buyer.updatedAt)}
-            </div>
+            <span className="text-sm text-gray-500">ID: #{buyer.id.slice(-8).toUpperCase()}</span>
           </div>
+          <div className="text-sm text-gray-500">
+            Last updated: {formatDateTime(buyer.updatedAt)}
+          </div>
+        </div>
 
-          {/* Contact Information */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <User className="w-5 h-5 mr-3 text-primary" />
-                Contact Information
-              </h3>
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          
+          {/* Contact Information Card */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <User className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
             </div>
             
-            <div className="card-content">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <User className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 mb-1">Full Name</dt>
-                      <dd className="text-base font-semibold text-gray-900">{buyer.fullName}</dd>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 mb-1">Phone Number</dt>
-                      <dd className="text-base font-semibold text-gray-900">
-                        <a href={`tel:${buyer.phone}`} className="text-primary hover:underline">
-                          {buyer.phone}
-                        </a>
-                      </dd>
-                    </div>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Full Name</div>
+                <div className="font-medium text-gray-900">{buyer.fullName}</div>
+              </div>
+              
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Phone Number</div>
+                <div className="font-medium">
+                  <a href={`tel:${buyer.phone}`} className="text-blue-600 hover:underline">
+                    {buyer.phone}
+                  </a>
+                </div>
+              </div>
+              
+              {buyer.email && (
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Email Address</div>
+                  <div className="font-medium">
+                    <a href={`mailto:${buyer.email}`} className="text-blue-600 hover:underline break-all">
+                      {buyer.email}
+                    </a>
                   </div>
                 </div>
-                
-                <div className="space-y-6">
-                  {buyer.email && (
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                        <Mail className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500 mb-1">Email Address</dt>
-                        <dd className="text-base font-semibold text-gray-900">
-                          <a href={`mailto:${buyer.email}`} className="text-primary hover:underline">
-                            {buyer.email}
-                          </a>
-                        </dd>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 mb-1">Location</dt>
-                      <dd className="text-base font-semibold text-gray-900">
-                        {getDisplayValue(buyer.city, CITY_DISPLAY)}
-                      </dd>
-                    </div>
-                  </div>
+              )}
+              
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Location</div>
+                <div className="font-medium text-gray-900">
+                  {getDisplayValue(buyer.city, CITY_DISPLAY)}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Property Requirements */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Home className="w-5 h-5 mr-3 text-primary" />
-                Property Requirements
-              </h3>
+          {/* Budget Card */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <DollarSign className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Budget</h3>
             </div>
             
-            <div className="card-content">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500 mb-1">Property Type</dt>
-                    <dd className="text-base font-semibold text-gray-900">
-                      {getDisplayValue(buyer.propertyType, PROPERTY_TYPE_DISPLAY)}
-                    </dd>
+            <div className="text-center py-8">
+              <div className="text-2xl font-bold text-gray-900 mb-2">
+                {buyer.budgetMin && buyer.budgetMax 
+                  ? `${formatCurrency(buyer.budgetMin)} - ${formatCurrency(buyer.budgetMax)}`
+                  : buyer.budgetMin 
+                    ? `${formatCurrency(buyer.budgetMin)}+`
+                    : buyer.budgetMax
+                      ? `Up to ${formatCurrency(buyer.budgetMax)}`
+                      : 'Not specified'
+                }
+              </div>
+              <div className="text-sm text-gray-500">Budget Range</div>
+            </div>
+            
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Clock className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">Timeline</span>
+              </div>
+              <div className="font-medium text-gray-900">
+                {getDisplayValue(buyer.timeline, TIMELINE_DISPLAY)}
+              </div>
+              <div className="text-sm text-gray-500">Purchase Timeline</div>
+            </div>
+          </div>
+
+          {/* Property Requirements Card */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Home className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Property Requirements</h3>
+            </div>
+            
+            <div className="text-center py-4">
+              <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm text-gray-500">Property Type</div>
+                  <div className="font-semibold text-gray-900">
+                    {getDisplayValue(buyer.propertyType, PROPERTY_TYPE_DISPLAY)}
                   </div>
                 </div>
                 
                 {buyer.bhk && (
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
-                      <Home className="w-5 h-5 text-teal-600" />
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 mb-1">Configuration</dt>
-                      <dd className="text-base font-semibold text-gray-900">
-                        {getDisplayValue(buyer.bhk, BHK_DISPLAY)}
-                      </dd>
+                  <div>
+                    <div className="text-sm text-gray-500">Configuration</div>
+                    <div className="font-semibold text-gray-900">
+                      {getDisplayValue(buyer.bhk, BHK_DISPLAY)}
                     </div>
                   </div>
                 )}
                 
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500 mb-1">Purpose</dt>
-                    <dd className="text-base font-semibold text-gray-900">
-                      {getDisplayValue(buyer.purpose, PURPOSE_DISPLAY)}
-                    </dd>
+                <div>
+                  <div className="text-sm text-gray-500">Purpose</div>
+                  <div className="font-semibold text-gray-900">
+                    {getDisplayValue(buyer.purpose, PURPOSE_DISPLAY)}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Budget & Timeline */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <DollarSign className="w-5 h-5 mr-3 text-primary" />
-                Budget & Timeline
-              </h3>
+        </div>
+
+        {/* Second Row - Additional Details & Management */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Additional Details Card */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Additional Details</h3>
             </div>
             
-            <div className="card-content">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500 mb-1">Budget Range</dt>
-                    <dd className="text-lg font-bold text-gray-900">
-                      {buyer.budgetMin && buyer.budgetMax 
-                        ? `${formatCurrency(buyer.budgetMin)} - ${formatCurrency(buyer.budgetMax)}`
-                        : buyer.budgetMin 
-                          ? `${formatCurrency(buyer.budgetMin)}+`
-                          : buyer.budgetMax
-                            ? `Up to ${formatCurrency(buyer.budgetMax)}`
-                            : 'Budget not specified'
-                      }
-                    </dd>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500 mb-1">Purchase Timeline</dt>
-                    <dd className="text-lg font-bold text-gray-900">
-                      {getDisplayValue(buyer.timeline, TIMELINE_DISPLAY)}
-                    </dd>
-                  </div>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Lead Source</div>
+                <div className="font-medium text-gray-900">
+                  {getDisplayValue(buyer.source, SOURCE_DISPLAY)}
                 </div>
               </div>
+              
+              {buyer.tags && buyer.tags.length > 0 && (
+                <div>
+                  <div className="text-sm text-gray-500 mb-2">Tags</div>
+                  <div className="flex flex-wrap gap-2">
+                    {buyer.tags.map((tag, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {buyer.notes && (
+                <div>
+                  <div className="text-sm text-gray-500 mb-2">Notes & Comments</div>
+                  <div className="text-sm text-gray-700 bg-gray-50 rounded p-3 leading-relaxed">
+                    {buyer.notes}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Additional Details */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <FileText className="w-5 h-5 mr-3 text-primary" />
-                Additional Details
-              </h3>
+          {/* Management Card */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <User className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Management</h3>
             </div>
             
-            <div className="card-content">
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500 mb-1">Lead Source</dt>
-                    <dd className="text-base font-semibold text-gray-900">
-                      {getDisplayValue(buyer.source, SOURCE_DISPLAY)}
-                    </dd>
-                  </div>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Assigned To</div>
+                <div className="font-medium text-gray-900">
+                  {buyer.owner?.fullName || 'Unassigned'}
                 </div>
-                
-                {buyer.tags && buyer.tags.length > 0 && (
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                      <Tag className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 mb-2">Tags</dt>
-                      <dd>
-                        <div className="flex flex-wrap gap-2">
-                          {buyer.tags.map((tag, index) => (
-                            <span 
-                              key={index}
-                              className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-lg"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </dd>
-                    </div>
-                  </div>
-                )}
-                
-                {buyer.notes && (
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-gray-600" />
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 mb-2">Notes & Comments</dt>
-                      <dd className="text-base text-gray-900 leading-relaxed bg-gray-50 rounded-xl p-4">
-                        {buyer.notes}
-                      </dd>
-                    </div>
-                  </div>
+                {buyer.owner?.email && (
+                  <div className="text-sm text-gray-500">{buyer.owner.email}</div>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Lead Information */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <User className="w-5 h-5 mr-3 text-primary" />
-                Lead Management
-              </h3>
-            </div>
-            
-            <div className="card-content">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div>
-                  <dt className="text-sm font-medium text-gray-500 mb-1">Assigned To</dt>
-                  <dd className="text-base font-semibold text-gray-900">
-                    {buyer.owner?.fullName || 'Unassigned'}
-                  </dd>
-                  {buyer.owner?.email && (
-                    <dd className="text-sm text-gray-500">{buyer.owner.email}</dd>
-                  )}
-                </div>
-                
-                <div>
-                  <dt className="text-sm font-medium text-gray-500 mb-1">Created</dt>
-                  <dd className="text-base font-semibold text-gray-900">
-                    {formatDateTime(buyer.createdAt)}
-                  </dd>
-                </div>
-                
-                <div>
-                  <dt className="text-sm font-medium text-gray-500 mb-1">Last Updated</dt>
-                  <dd className="text-base font-semibold text-gray-900">
-                    {formatDateTime(buyer.updatedAt)}
-                  </dd>
+              
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Created</div>
+                <div className="text-sm text-gray-900">
+                  {formatDateTime(buyer.createdAt)}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-6">
-            <Button variant="secondary" onClick={() => router.push('/buyers')} size="lg">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to All Buyers
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-8 border-t mt-8">
+          <Button variant="secondary" onClick={() => router.push('/buyers')}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to All Buyers
+          </Button>
+          
+          {canEdit && (
+            <Button 
+              variant="primary"
+              onClick={() => router.push(`/buyers/${buyer.id}/edit`)}
+            >
+              <Edit3 className="w-4 h-4 mr-2" />
+              Edit This Buyer
             </Button>
-            
-            {canEdit && (
-              <Button 
-                variant="primary"
-                onClick={() => router.push(`/buyers/${buyer.id}/edit`)}
-                size="lg"
-              >
-                <Edit3 className="w-4 h-4 mr-2" />
-                Edit This Buyer
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </main>
     </div>

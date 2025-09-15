@@ -68,7 +68,7 @@ export default function LoginPage() {
           <div className="hero-content">
             <h2 className="hero-title">
               Manage leads like
-              <span className="hero-highlight">a pro</span>
+              <span className="hero-highlight"> a pro</span>
             </h2>
             <p className="hero-description">
               Transform your real estate business with intelligent lead management, 
@@ -89,22 +89,6 @@ export default function LoginPage() {
             <div className="feature-item">
               <Globe className="feature-icon" />
               <span>Multi-location support</span>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="stats-container">
-            <div className="stat-item">
-              <div className="stat-number">99.9%</div>
-              <div className="stat-label">Uptime</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">50K+</div>
-              <div className="stat-label">Leads</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">2.5x</div>
-              <div className="stat-label">Growth</div>
             </div>
           </div>
         </div>
@@ -163,7 +147,7 @@ export default function LoginPage() {
 
             {/* Demo Options */}
             <div className="demo-section">
-              <div className="divider">
+              <div className="divider text-center">
                 <span>or try demo</span>
               </div>
 
@@ -188,10 +172,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="form-footer">
-              <p>Trusted by 1000+ real estate teams worldwide</p>
-            </div>
           </div>
         </div>
       </div>
@@ -526,7 +506,7 @@ export default function LoginPage() {
 
         .divider {
           position: relative;
-          text-align: center;
+          text-align: center !important;
           margin-bottom: 1.5rem;
         }
 

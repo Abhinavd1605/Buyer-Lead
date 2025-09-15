@@ -889,6 +889,26 @@ textarea.input {
 .backdrop-blur-md { backdrop-filter: blur(12px); }
 .backdrop-blur-lg { backdrop-filter: blur(16px); }
 
+/* Transparency utilities */
+.bg-black\/40 { background-color: rgba(0, 0, 0, 0.4); }
+.bg-white\/95 { background-color: rgba(255, 255, 255, 0.95); }
+.bg-white\/60 { background-color: rgba(255, 255, 255, 0.6); }
+.bg-white\/80 { background-color: rgba(255, 255, 255, 0.8); }
+.bg-white\/20 { background-color: rgba(255, 255, 255, 0.2); }
+.bg-white\/70 { background-color: rgba(255, 255, 255, 0.7); }
+.bg-green-50\/50 { background-color: rgba(240, 253, 244, 0.5); }
+.bg-purple-50\/30 { background-color: rgba(250, 245, 255, 0.3); }
+.bg-red-50\/80 { background-color: rgba(254, 242, 242, 0.8); }
+.bg-gray-50\/80 { background-color: rgba(249, 250, 251, 0.8); }
+
+/* Border transparency utilities */
+.border-white\/20 { border-color: rgba(255, 255, 255, 0.2); }
+.border-gray-200\/50 { border-color: rgba(229, 231, 235, 0.5); }
+.border-blue-200\/50 { border-color: rgba(191, 219, 254, 0.5); }
+.border-red-200\/50 { border-color: rgba(254, 202, 202, 0.5); }
+.border-blue-200\/30 { border-color: rgba(191, 219, 254, 0.3); }
+.border-red-200\/30 { border-color: rgba(254, 202, 202, 0.3); }
+
 /* Enhanced float animation */
 @keyframes float {
   0%, 100% { 
